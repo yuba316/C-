@@ -1,6 +1,10 @@
 #pragma once
 #include <vector>
+#include <map>
+#include <string>
 #include "ThostFtdcMdApi.h"
+
+using namespace std;
 
 class CustomerMdSpi: public CThostFtdcMdSpi
 {

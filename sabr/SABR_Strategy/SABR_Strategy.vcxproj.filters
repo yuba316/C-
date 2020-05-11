@@ -24,6 +24,9 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CustomerMdSpi.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="calculator.h">
@@ -38,9 +41,18 @@
     <ClInclude Include="nlopt.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CustomerMdSpi.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="libnlopt-0.dll">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="thostmduserapi_se.dll">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="thosttraderapi_se.dll">
       <Filter>源文件</Filter>
     </None>
   </ItemGroup>

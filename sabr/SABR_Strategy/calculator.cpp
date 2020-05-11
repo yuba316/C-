@@ -10,8 +10,9 @@ typedef struct{
 double calculator::calIV(double exercise_price, bool CorP, double T, double rf, double underlying_price, double last_price) {
 	double BSM_price = 0, sigma = 0.5, up = 1, dw = 0, d1, d2;
 	boost::math::normal_distribution<> norm(0, 1);
+	int count = 0;
 	if (CorP) {
-		while (abs(BSM_price - last_price) > 1e-6) {
+		while (count < 20) {
 			d1 = (log(underlying_price / exercise_price) + (rf + pow(sigma, 2) / 2) * T) / (sigma * sqrt(T));
 			d2 = d1 - sigma * sqrt(T);
 			BSM_price = underlying_price * (1-boost::math::cdf(boost::math::complement(norm, d1))) -
@@ -27,10 +28,11 @@ double calculator::calIV(double exercise_price, bool CorP, double T, double rf, 
 			else {
 				break;
 			}
+			count++;
 		}
 	}
 	else {
-		while (abs(BSM_price - last_price) > 1e-6) {
+		while (count < 20) {
 			d1 = (log(underlying_price / exercise_price) + (rf + pow(sigma, 2) / 2) * T) / (sigma * sqrt(T));
 			d2 = d1 - sigma * sqrt(T);
 			BSM_price = exercise_price * exp(-1 * rf * T) * (1-boost::math::cdf(boost::math::complement(norm, -1 * d2))) -
@@ -46,6 +48,7 @@ double calculator::calIV(double exercise_price, bool CorP, double T, double rf, 
 			else {
 				break;
 			}
+			count++;
 		}
 	}
 	return sigma;
@@ -83,7 +86,6 @@ double optMSE(unsigned n, const double* x, double* grad, void* f_data_p) {
 		SABR = c.calSabr(exercise_price[i], T, rf, underlying_price, alpha, beta, x);
 		MSE = MSE + pow(SABR - IV[i], 2);
 	}
-	cout << "vega: " << x[0] << " rho: " << x[1] << " MSE: " << MSE << endl;
 	return MSE / m;
 }
 
@@ -128,7 +130,6 @@ vector<double> calculator::calVegaRho(double* exercise_price, double* IV, int n,
 	double x[2] = { 0.5,0.5 };
 	double optimal_dis = 1;
 	nlopt_optimize(opt, x, &optimal_dis);
-	cout << "dis: " << to_string(optimal_dis) << " vega: " << to_string(x[0]) << " rho: " << to_string(x[1]) << endl;
 	vector<double> vr{ x[0],x[1] };
 	return vr;
 }

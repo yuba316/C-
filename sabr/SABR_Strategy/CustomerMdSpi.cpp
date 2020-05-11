@@ -8,6 +8,7 @@ extern TThostFtdcInvestorIDType gInvesterID; // 用户登录用账号，同UserID
 extern TThostFtdcPasswordType gInvesterPassword; // 密码
 extern char* g_pInstrumentID[]; // 需要订阅的合约代码
 extern int instrumentNum; // 行情订阅数
+extern map<string, vector<double>> quoteMap;
 
 void CustomerMdSpi::OnFrontConnected() {
 	std::cout << "连接接口成功" << std::endl;
@@ -26,8 +27,7 @@ void CustomerMdSpi::OnFrontConnected() {
 		std::cerr << "登录请求发送失败" << std::endl;
 }
 
-void CustomerMdSpi::OnFrontDisconnected(int nReason)
-{	
+void CustomerMdSpi::OnFrontDisconnected(int nReason) {
 	// nReason 错误原因
 	// 0x1001 网络读失败
 	// 0x1002 网络写失败
@@ -37,8 +37,7 @@ void CustomerMdSpi::OnFrontDisconnected(int nReason)
 	std::cerr << "接口连接已断开(error: " << nReason << ")" << std::endl;
 }
 
-void CustomerMdSpi::OnHeartBeatWarning(int nTimeLapse)
-{
+void CustomerMdSpi::OnHeartBeatWarning(int nTimeLapse) {
 	std::cerr << "连接心跳超时，距离上次连接时间：" << nTimeLapse << std::endl;
 }
 
@@ -95,15 +94,13 @@ void CustomerMdSpi::OnRspUserLogout(
 		std::cerr << "用户退出失败(errorID: " << pRspInfo->ErrorID << ", errorMsg: " << pRspInfo->ErrorMsg << ")" << std::endl;
 }
 
-void CustomerMdSpi::OnRspError(CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
-{
+void CustomerMdSpi::OnRspError(CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast) {
 	bool bResult = pRspInfo && (pRspInfo->ErrorID != 0);
 	if (bResult)
 		std::cerr << "错误报告(errorID: " << pRspInfo->ErrorID << ", errorMsg: " << pRspInfo->ErrorMsg << ")" << std::endl;
 }
 
-void CustomerMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
-{
+void CustomerMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData) {
 	// 逐行输出行情，与上文的位置相对应
 	std::cout << pDepthMarketData->InstrumentID << "," 
 		<< pDepthMarketData->UpdateTime << "." << pDepthMarketData->UpdateMillisec << "," 
@@ -115,4 +112,17 @@ void CustomerMdSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthM
 		<< pDepthMarketData->AskVolume1 << "," 
 		<< pDepthMarketData->OpenInterest << "," 
 		<< pDepthMarketData->Turnover << std::endl;
+
+	vector<double> quote;
+	quote.push_back(pDepthMarketData->LastPrice); // 0: 最新价
+	quote.push_back(double(pDepthMarketData->Volume)); // 1: 成交量
+	quote.push_back(pDepthMarketData->BidPrice1); // 2: 买一价
+	quote.push_back(double(pDepthMarketData->BidVolume1)); // 3: 买一量
+	quote.push_back(pDepthMarketData->AskPrice1); // 4: 卖一价
+	quote.push_back(double(pDepthMarketData->AskVolume1)); // 5: 卖一量
+	quote.push_back(pDepthMarketData->OpenInterest); // 6: oi
+	quote.push_back(pDepthMarketData->Turnover); // 7: 成交额
+
+	std::string instrumentKey = std::string(pDepthMarketData->InstrumentID);
+	quoteMap[instrumentKey] = quote;
 }
